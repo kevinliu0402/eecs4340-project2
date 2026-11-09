@@ -1,0 +1,6 @@
+simv
+simv.daidir/
+csrc/
+*.vpd
+ucli.key
+*.log
