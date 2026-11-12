@@ -1,0 +1,50 @@
+# Formal checks for ISR (integer square root), run with SymbiYosys.
+#   control  prove the FSM, latency and handshake properties (C1-C8)
+#   algo     prove M(result) <= value < M(result+1) for every 64-bit value,
+#            where M(x) is the square the multiplier returned for x
+#            (M(x) = x*x is the multiplier's own property, see mult.sby)
+#   cover    reach done, and both outcomes of the bit test
+#   deep_algo  40-cycle BMC with every property asserted: the first four bit
+#              tests, where an algorithm bug shows up (used by run_mutants.sh)
+#
+# In every task the 8 partial-product multipliers inside mult_stage are cut
+# (their outputs become free values): the control logic must not depend on
+# the product, and the algorithm task tracks which square each product is.
+
+[tasks]
+control
+algo
+cover
+deep_algo
+
+[options]
+control: mode prove
+control: depth 12
+algo:    mode prove
+algo:    depth 4
+cover:   mode cover
+cover:   depth 330
+deep_algo: mode bmc
+deep_algo: depth 40
+
+[engines]
+control: smtbmc yices
+algo:    smtbmc yices
+cover:   smtbmc yices
+deep_algo: smtbmc yices
+
+[script]
+algo: read -define FV_ALGO FV_ASSUME_CTRL
+deep_algo: read -define FV_ALGO
+read -formal -sv -I. mult_stage.sv mult.sv ISR_fv.sv
+prep -top ISR
+cutpoint mult_stage/t:$mul
+flatten
+opt_clean
+
+[files]
+../rtl/mult_defs.svh
+build/mult_stage.sv
+../rtl/mult.sv
+build/ISR_fv.sv
+isr_props.svh

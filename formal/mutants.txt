@@ -1,0 +1,13 @@
+# Bugs injected one at a time into a copy of rtl/ISR.sv. Each must stop the
+# control or algo proof from passing; a mutant that still passes both means
+# a gap in the properties.
+# Columns are separated by ¦. \n in the text stands for a newline.
+# id ¦ what the bug does ¦ exact text in ISR.sv ¦ replacement
+m1 ¦ start from bit 30, skipping the top bit ¦ bit_index      <= 6'd31; ¦ bit_index      <= 6'd30;
+m2 ¦ finish one bit early (stop at bit 1) ¦ if (bit_index == 6'd0) begin ¦ if (bit_index == 6'd1) begin
+m3 ¦ done stuck high after FINISH ¦ DONE_WAIT: begin\n                    done <= 1'b0; ¦ DONE_WAIT: begin\n                    done <= 1'b1;
+m4 ¦ skip WAIT_MULT and read the product early ¦ mult_start = 1'b1;\n                next_state = WAIT_MULT; ¦ mult_start = 1'b1;\n                next_state = CHECK_RESULT;
+m5 ¦ set the wrong bit when keeping a guess ¦ current_result <= current_result | (32'b1 << bit_index[4:0]); ¦ current_result <= current_result | (32'b1 << (bit_index[4:0] + 5'd1));
+m6 ¦ strict compare: perfect squares round down ¦ if (mult_product <= stored_value) begin ¦ if (mult_product < stored_value) begin
+m7 ¦ square the old result instead of the guess ¦ assign mult_mcand  = {32'b0, current_result | (32'b1 << bit_index[4:0])}; ¦ assign mult_mcand  = {32'b0, current_result};
+m8 ¦ compare against the live input, not the sampled one ¦ if (mult_product <= stored_value) begin ¦ if (mult_product <= value) begin

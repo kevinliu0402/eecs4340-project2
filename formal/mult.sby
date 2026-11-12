@@ -1,0 +1,35 @@
+# Formal checks for the 8-stage multiplier, run with SymbiYosys.
+#   ctrl    done is start delayed by exactly 8 cycles (partial products cut)
+#   prod8   product = low 64 bits of mcand * mplier, operands up to 8 bits
+#   prod12  same, operands up to 12 bits (about 1 hour on a laptop)
+# The pipeline has no feedback, so 9-step k-induction covers every cycle.
+# Full 64-bit operands are out of reach for SAT-based equivalence of two
+# different multiplier structures; the VCS SVA testbench covers them.
+
+[tasks]
+ctrl
+prod8  prod
+prod12 prod
+
+[options]
+mode prove
+depth 10
+
+[engines]
+ctrl: smtbmc yices
+prod: smtbmc bitwuzla
+
+[script]
+prod8:  read -define FV_PRODUCT FV_OPW=8
+prod12: read -define FV_PRODUCT FV_OPW=12
+read -formal -sv -I. mult_stage.sv mult_fv.sv
+prep -top mult
+ctrl: cutpoint mult_stage/t:$mul
+flatten
+opt_clean
+
+[files]
+../rtl/mult_defs.svh
+build/mult_stage.sv
+build/mult_fv.sv
+mult_props.svh
