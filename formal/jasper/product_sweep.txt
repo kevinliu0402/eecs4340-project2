@@ -1,0 +1,3 @@
+PRODUCT_RESULT W=8 status=proven time=16s
+PRODUCT_RESULT W=12 status=undetermined time=1203s
+PRODUCT_RESULT W=16 status=undetermined time=1202s
