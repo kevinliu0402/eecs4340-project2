@@ -1,0 +1,7 @@
+`verilator_config
+// Waivers for verilator --lint-only -Wall (see run_lint.sh).
+// mult.sv is the course-provided pipelined multiplier. The last stage's
+// next_mcand/next_mplier outputs have nowhere to go, so the module ties them
+// to mcand_out/mplier_out ("unused, just for wiring"). Waived, not changed.
+lint_off -rule UNUSEDSIGNAL -file "*/rtl/mult.sv" -match "*mcand_out*"
+lint_off -rule UNUSEDSIGNAL -file "*/rtl/mult.sv" -match "*mplier_out*"
